@@ -15,6 +15,9 @@ public class AlgaeAquarium {
     static void setPosition(double x, double y, PainterAPI t) {
         // will move the painter to (x, y) without drawing or doing anything extra
         // no other methods will be called in here
+        t.liftPen();
+        t.moveTo(x, y);
+        t.lowerPen();
     }
 
     /**
@@ -27,7 +30,10 @@ public class AlgaeAquarium {
 
     static void drawCircleShape(double x, double y, double radius, Color color, PainterAPI t) {
         // draws a filled circle while being placed at (x, y)
-        // setPosition method will be called
+        setPosition(x, y - radius, t);  // the circle is shifted up since it starts the drawing at the bottom of the circle
+        t.startFill(color);
+        t.circle(radius);
+        t.finishFill();
     }
 
     /**
@@ -39,7 +45,15 @@ public class AlgaeAquarium {
      */
     static void drawDiamondShape(double x, double y, double size, Color color, PainterAPI t) {
         // draws a filled diamond (a square turned on its corner) placed at (x, y)
-        // will call: setPosition
+        setPosition(x, y, t);
+        t.startFill(color);
+        t.turnLeft(45);
+        for (int i = 0; i < 4; i++) {
+            t.forward(size);
+            t.turnRight(90);
+        }
+        t.turnRight(45);
+        t.finishFill();
     }
 
     /**
@@ -49,9 +63,32 @@ public class AlgaeAquarium {
      * @param color  the fill color of the triangle
      * @param t      the PainterAPI object used to draw
      */
-    static void drawTriangleShape(double x, double y, double size, Color color, PainterAPI t) {
+    static void drawTriangleRight(double x, double y, double size, Color color, PainterAPI t) {
         // draw a triangle to represent a tail
-        // setPosition method will be called
+        setPosition(x, y, t);
+        t.startFill(color);
+        t.turnRight(150);
+        for (int i = 0; i < 3; i++) {
+            t.forward(size);
+            t.turnRight(120);
+        }
+        t.finishFill();
+        t.turnLeft(150);
+    }   
+
+    // Same thing just flipped for left Fish
+
+    static void drawTriangleLeft(double x, double y, double size, Color color, PainterAPI t) {
+        // draw a triangle to represent a left facing fishtail 
+        setPosition(x, y, t);
+        t.startFill(color);
+        t.turnRight(30);
+        for (int i = 0; i < 3; i++) {
+            t.forward(size);
+            t.turnLeft(120);
+        }
+        t.finishFill();
+        t.turnLeft(30);
     }
 
     /**
@@ -62,46 +99,45 @@ public class AlgaeAquarium {
         // Draws the two circular fish
         // Each fish has a circle body, a triangle tail and a circle eye
         // The direction of the fish will be seen by the tail and eye placement
-        //
-        // Loop #1 : repeat 2 times, once for each circular fish
-        //   Fish 1 : red, normal size (radius will probably be something like 40)
-        //       rough position: left side of the tank, upper area, facing right
-        //   Fish 2 : purple, small (radius probably around 20)
-        //       rough position: lower right area, facing left
-        // Inside the loop for each fish:
-        //   draw body : call drawCircleShape
-        //   draw tail : call drawTriangleShape
-        //   draw eye  : call drawCircleShape 
-        //   will call setPosition
+
+        drawCircleShape(-225, 170, 40, Color.RED, t);
+        drawTriangleRight(-265, 170, 40, Color.RED, t);
+        drawCircleShape(-205, 190, 8, Color.BLACK, t);
+
+        drawCircleShape(170, -45, 20, new Color(128, 0, 128), t); //purple
+        drawTriangleLeft(190, -45, 20, new Color(128, 0, 128), t);
+        drawCircleShape(160, -35, 4, Color.BLACK, t);
     }
 
     static void drawDiamondFish(PainterAPI t) {
         // Draws the two diamond fish, a big yellow fish and a blue fish
         // Each fish has a diamond body, a triangle tail and a circle eye
-        //
-        // Loop 2: repeat 2 times, once for each diamond fish
-        //   Fish 3: yellow, big (size around 80)
-        //       rough position: upper right area, facing left
-        //   Fish 4: blue, between small and normal (size aorund 50)
-        //       rough position: lower left area, facing right
-        // Inside the loop for each fish:
-        //   draw body : call drawDiamondShape
-        //   draw tail : call drawTriangleShape 
-        //   draw eye  : call drawCircleShape  
-        //   will call setPosition
+    
+        drawDiamondShape(-5, 155, 80, Color.YELLOW, t);
+        drawTriangleLeft(107, 155, 80, Color.YELLOW, t);
+        drawCircleShape(35, 171, 8, Color.BLACK, t);
+
+        drawDiamondShape(-220, -77, 50, Color.BLUE, t);
+        drawTriangleRight(-220, -77, 50, Color.BLUE, t);
+        drawCircleShape(-175, -67, 5, Color.BLACK, t);
     }
 
     static void drawDecorations(PainterAPI t) {
         // Draws bubbles and a box of fish food (bait)
-        //
-        // Loop 3: repeat about 5 times to draw multiple bubbles
-        //   each bubble will call drawCircleShape
-        //   change x/y position each time
-        //   rough position: somewhere around
-        //   will also call: setPosition
-        //
-        // Bait box: draw a simple box 
-        //   setPosition will be called to move to the bottom of the tank
+
+        for (int i = 0; i < 5; i++) {
+            drawCircleShape(-125 + i * 10, -70 + i * 50, 6 + i * 2, Color.WHITE, t);  // creates the effect of the bubbles floating up
+        }
+
+        // box of fish bait
+
+        setPosition(-40, -280, t);
+        t.startFill(new Color(139, 69, 19)); // brown
+        for (int j = 0; j < 4; j++) {
+            t.forward(80);
+            t.turnLeft(90);
+        }
+        t.finishFill();
     }
 
     public static void main(String[] args) {
@@ -112,15 +148,9 @@ public class AlgaeAquarium {
 
         PainterAPI t = canvas.getPainter();
         t.setSpeed(5);
-
-        // setup test: three different PainterAPI calls (delete later)
-        t.forward(100);
-        t.turnRight(90);
-        t.circle(30);
-
-        // main will call these once building starts
-        // drawCircularFish(t);
-        // drawDiamondFish(t);
-        // drawDecorations(t);
+        // Draw the fish and decorations
+        drawCircularFish(t);
+        drawDiamondFish(t);
+        drawDecorations(t);
     }
 }
